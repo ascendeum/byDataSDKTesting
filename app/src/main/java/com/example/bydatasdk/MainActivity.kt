@@ -5,9 +5,14 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -37,13 +42,20 @@ import org.prebid.mobile.TargetingParams
 private const val PREBID_SERVER_URL = "https://fast.nexx360.io/inapp"
     //"https://prebid-server-test-j.prebid.org/openrtb2/auction"
 private const val PREBID_STORED_REQUEST_ID = "1225"  // "0689a263-318d-448b-a3d4-b02e8a709d9d"
-private const val PREBID_BANNER_CONFIG_ID = "q0yz226t"
+private const val HOME_PREBID_BANNER_CONFIG_ID = "q0yz226t"
+private const val SYMBOL_PREBID_BANNER_CONFIG_ID = "wwpjhyld"
 //"prebid-demo-banner-320-50"
-private const val GAM_AD_UNIT_ID = "/22404395434/stocktwitsandroidapp/HomePage_SmallBanner"
+private const val HOME_GAM_AD_UNIT_ID = "/22404395434/stocktwitsandroidapp/HomePage_SmallBanner"
+private const val SYMBOL_GAM_AD_UNIT_ID = "/22404395434/stocktwitsandroidapp/SymbolPage_SmallBanner"
 private const val BANNER_WIDTH = 320
 private const val BANNER_HEIGHT = 50
 
 private const val TAG_STR  = "ADSTest"
+
+private enum class AdDemoScreen {
+    Home,
+    Symbol,
+}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -65,7 +77,36 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             ByDataSdkTheme {
-                CenteredAdScreen(isPrebidInitialized = isPrebidInitialized)
+                AdDemoScreen(isPrebidInitialized = isPrebidInitialized)
+            }
+        }
+    }
+}
+
+@Composable
+fun AdDemoScreen(
+    isPrebidInitialized: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    var selectedScreen by remember { mutableStateOf(AdDemoScreen.Home) }
+
+    Box(modifier = modifier.fillMaxSize()) {
+        when (selectedScreen) {
+            AdDemoScreen.Home -> CenteredAdScreen(isPrebidInitialized = isPrebidInitialized)
+            AdDemoScreen.Symbol -> SymbolAdScreen(isPrebidInitialized = isPrebidInitialized)
+        }
+
+        Row(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = 48.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Button(onClick = { selectedScreen = AdDemoScreen.Home }) {
+                Text(text = "Home")
+            }
+            Button(onClick = { selectedScreen = AdDemoScreen.Symbol }) {
+                Text(text = "Symbol")
             }
         }
     }
@@ -81,7 +122,12 @@ fun CenteredAdScreen(
         contentAlignment = Alignment.Center,
     ) {
         if (isPrebidInitialized && !LocalInspectionMode.current) {
-            PrebidGamBanner()
+            PrebidGamBanner(
+                gamAdUnitId = HOME_GAM_AD_UNIT_ID,
+                prebidBannerConfigId = HOME_PREBID_BANNER_CONFIG_ID,
+                screenName = "homescreen",
+                screenTitle = "home",
+            )
         } else {
             Box(modifier = Modifier.size(BANNER_WIDTH.dp, BANNER_HEIGHT.dp))
         }
@@ -89,11 +135,39 @@ fun CenteredAdScreen(
 }
 
 @Composable
-fun PrebidGamBanner(modifier: Modifier = Modifier) {
+fun SymbolAdScreen(
+    isPrebidInitialized: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center,
+    ) {
+        if (isPrebidInitialized && !LocalInspectionMode.current) {
+            PrebidGamBanner(
+                gamAdUnitId = SYMBOL_GAM_AD_UNIT_ID,
+                prebidBannerConfigId = SYMBOL_PREBID_BANNER_CONFIG_ID,
+                screenName = "symbolscreen",
+                screenTitle = "symbol",
+            )
+        } else {
+            Box(modifier = Modifier.size(BANNER_WIDTH.dp, BANNER_HEIGHT.dp))
+        }
+    }
+}
+
+@Composable
+fun PrebidGamBanner(
+    gamAdUnitId: String,
+    prebidBannerConfigId: String,
+    screenName: String,
+    screenTitle: String,
+    modifier: Modifier = Modifier,
+) {
     val context = LocalContext.current
-    val adView = remember {
+    val adView = remember(gamAdUnitId, screenName, screenTitle) {
         AdManagerAdView(context).apply {
-            adUnitId = GAM_AD_UNIT_ID
+            adUnitId = gamAdUnitId
             setAdSizes(AdSize(BANNER_WIDTH, BANNER_HEIGHT))
             adListener = object : AdListener() {
                 override fun onAdLoaded() {
@@ -101,9 +175,9 @@ fun PrebidGamBanner(modifier: Modifier = Modifier) {
                     EventsLoggerSdk.trackEvent(
                         eventName = "display_impression",
                         userId = "",
-                        screenName = "homescreen",
-                        screenTitle = "home",
-                        params = mapOf("cd1" to GAM_AD_UNIT_ID),
+                        screenName = screenName,
+                        screenTitle = screenTitle,
+                        params = mapOf("cd1" to gamAdUnitId),
                     )
                     setAdSizes(AdSize(BANNER_WIDTH, BANNER_HEIGHT))
                 }
@@ -111,16 +185,16 @@ fun PrebidGamBanner(modifier: Modifier = Modifier) {
                     EventsLoggerSdk.trackEvent(
                         eventName = "ad_click",
                         userId = "",
-                        screenName = "homescreen",
-                        screenTitle = "home",
-                        params = mapOf("cd1" to GAM_AD_UNIT_ID),
+                        screenName = screenName,
+                        screenTitle = screenTitle,
+                        params = mapOf("cd1" to gamAdUnitId),
                     )
                 }
             }
         }
     }
-    val adUnit = remember {
-        BannerAdUnit(PREBID_BANNER_CONFIG_ID, BANNER_WIDTH, BANNER_HEIGHT).apply {
+    val adUnit = remember(prebidBannerConfigId) {
+        BannerAdUnit(prebidBannerConfigId, BANNER_WIDTH, BANNER_HEIGHT).apply {
             bannerParameters = BannerParameters().apply {
                 api = listOf(Signals.Api.MRAID_3, Signals.Api.OMID_1)
             }
@@ -151,6 +225,6 @@ fun PrebidGamBanner(modifier: Modifier = Modifier) {
 @Composable
 fun CenteredAdScreenPreview() {
     ByDataSdkTheme {
-        CenteredAdScreen(isPrebidInitialized = false)
+        AdDemoScreen(isPrebidInitialized = false)
     }
 }
