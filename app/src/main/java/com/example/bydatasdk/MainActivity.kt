@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.eventslogger.EventsLoggerSdk
 import com.example.bydatasdk.ui.theme.ByDataSdkTheme
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdSize
@@ -97,7 +98,23 @@ fun PrebidGamBanner(modifier: Modifier = Modifier) {
             adListener = object : AdListener() {
                 override fun onAdLoaded() {
                     Log.d(TAG_STR,"onAdLoaded");
+                    EventsLoggerSdk.trackEvent(
+                        eventName = "display_impression",
+                        userId = "",
+                        screenName = "homescreen",
+                        screenTitle = "home",
+                        params = mapOf("cd1" to GAM_AD_UNIT_ID),
+                    )
                     setAdSizes(AdSize(BANNER_WIDTH, BANNER_HEIGHT))
+                }
+                override fun onAdClicked() {
+                    EventsLoggerSdk.trackEvent(
+                        eventName = "ad_click",
+                        userId = "",
+                        screenName = "homescreen",
+                        screenTitle = "home",
+                        params = mapOf("cd1" to GAM_AD_UNIT_ID),
+                    )
                 }
             }
         }
