@@ -17,14 +17,14 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
 
-//        maven {
-//            url = uri("https://gitlab.com/api/v4/projects/81760008/packages/maven")
-//
-//            credentials {
-//                username = "PRIVATE-TOKEN"
-//                password = "YOUR_TOKEN"
-//            }
-//        }
+        maven {
+            url = uri("https://gitlab.com/api/v4/projects/81760008/packages/maven")
+
+            credentials {
+                username = "PRIVATE-TOKEN"
+                password = "glpat-wBXCQvKEdH39CQyctBDLYWM6MQpvOjEKdTptaWEydA8.01.171692n6n"
+            }
+        }
     }
 }
 
