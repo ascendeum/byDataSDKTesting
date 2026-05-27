@@ -52,7 +52,8 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation("com.google.android.gms:play-services-ads:25.2.0")
     implementation("org.prebid:prebid-mobile-sdk:3.1.0")
-    implementation("bydata.telemetrysdk:eventlogger:1.0.0")
+    implementation("bydata.telemetrysdk:eventlogger:1.0.2")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

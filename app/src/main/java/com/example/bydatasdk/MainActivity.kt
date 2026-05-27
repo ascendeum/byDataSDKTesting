@@ -30,20 +30,22 @@ import com.eventslogger.EventsLoggerSdk
 import com.example.bydatasdk.ui.theme.ByDataSdkTheme
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.admanager.AdManagerAdRequest
 import com.google.android.gms.ads.admanager.AdManagerAdView
 import org.prebid.mobile.BannerAdUnit
 import org.prebid.mobile.BannerParameters
 import org.prebid.mobile.PrebidMobile
+import org.prebid.mobile.ResultCode
 import org.prebid.mobile.Signals
 import org.prebid.mobile.TargetingParams
 
 private const val PREBID_SERVER_URL = "https://fast.nexx360.io/inapp"
     //"https://prebid-server-test-j.prebid.org/openrtb2/auction"
 private const val PREBID_STORED_REQUEST_ID = "1225"  // "0689a263-318d-448b-a3d4-b02e8a709d9d"
-private const val HOME_PREBID_BANNER_CONFIG_ID = "q0yz226t"
-private const val SYMBOL_PREBID_BANNER_CONFIG_ID = "wwpjhyld"
+private const val HOME_PREBID_BANNER_CONFIG_ID = "2d60yfch"
+private const val SYMBOL_PREBID_BANNER_CONFIG_ID = "sckflmua"
 //"prebid-demo-banner-320-50"
 private const val HOME_GAM_AD_UNIT_ID = "/22404395434/stocktwitsandroidapp/HomePage_SmallBanner"
 private const val SYMBOL_GAM_AD_UNIT_ID = "/22404395434/stocktwitsandroidapp/SymbolPage_SmallBanner"
@@ -190,6 +192,19 @@ fun PrebidGamBanner(
                         params = mapOf("cd1" to gamAdUnitId),
                     )
                 }
+                override fun onAdFailedToLoad(error: LoadAdError) {
+                    EventsLoggerSdk.trackEvent(
+                        eventName = "ad_load_failed",
+                        screenName = screenName,
+                        screenTitle = screenTitle,
+                        params = mapOf(
+                            "adUnitId" to gamAdUnitId,
+                            "errorCode" to error.code,
+                            "errorMessage" to error.message,
+                            "errorDomain" to error.domain
+                        )
+                    )
+                }
             }
         }
     }
@@ -204,9 +219,22 @@ fun PrebidGamBanner(
 
     DisposableEffect(adView, adUnit) {
         val request = AdManagerAdRequest.Builder().build()
-        adUnit.fetchDemand(request) {
-            Log.d(TAG_STR,"KV: ${request.customTargeting}");
-            adView.loadAd(request)
+        adUnit.fetchDemand(request) { resultCode ->
+            Log.d(TAG_STR,"fetchDemand result: $resultCode, KV: ${request.customTargeting}");
+            if (resultCode == ResultCode.SUCCESS) {
+                adView.loadAd(request)
+            } else {
+                EventsLoggerSdk.trackEvent(
+                    eventName = "prebid_fetch_demand_failed",
+                    screenName = screenName,
+                    screenTitle = screenTitle,
+                    params = mapOf(
+                        "adUnitId" to gamAdUnitId,
+                        "prebidConfigId" to prebidBannerConfigId,
+                        "resultCode" to resultCode.name,
+                    ),
+                )
+            }
         }
 
         onDispose {
