@@ -26,6 +26,7 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.bydata.sdk.ByDataAnalyticsHolder
 import com.eventslogger.EventsLoggerSdk
 import com.example.bydatasdk.ui.theme.ByDataSdkTheme
 import com.google.android.gms.ads.AdListener
@@ -58,6 +59,8 @@ private enum class AdDemoScreen {
     Home,
     Symbol,
 }
+
+val byData = ByDataAnalyticsHolder.getInstance()
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -130,6 +133,11 @@ fun CenteredAdScreen(
                 screenName = "homescreen",
                 screenTitle = "home",
             )
+            byData.track(
+                eventName = "page_view",
+                screen = "homescreen",
+                screenTitle = "home",
+            )
         } else {
             Box(modifier = Modifier.size(BANNER_WIDTH.dp, BANNER_HEIGHT.dp))
         }
@@ -150,6 +158,11 @@ fun SymbolAdScreen(
                 gamAdUnitId = SYMBOL_GAM_AD_UNIT_ID,
                 prebidBannerConfigId = SYMBOL_PREBID_BANNER_CONFIG_ID,
                 screenName = "symbolscreen",
+                screenTitle = "symbol",
+            )
+            byData.track(
+                eventName = "page_view",
+                screen = "symbolscreen",
                 screenTitle = "symbol",
             )
         } else {
@@ -181,6 +194,7 @@ fun PrebidGamBanner(
                         screenTitle = screenTitle,
                         params = mapOf("cd1" to gamAdUnitId),
                     )
+                    byData.track("display_impression",screenName,screenTitle,null,customDimension1 = gamAdUnitId)
                     setAdSizes(AdSize(BANNER_WIDTH, BANNER_HEIGHT))
                 }
                 override fun onAdClicked() {
@@ -191,6 +205,7 @@ fun PrebidGamBanner(
                         screenTitle = screenTitle,
                         params = mapOf("cd1" to gamAdUnitId),
                     )
+                    byData.track("ad_click",screenName,screenTitle,null,customDimension1 = gamAdUnitId)
                 }
                 override fun onAdFailedToLoad(error: LoadAdError) {
                     EventsLoggerSdk.trackEvent(
@@ -204,6 +219,7 @@ fun PrebidGamBanner(
                             "errorDomain" to error.domain
                         )
                     )
+                    byData.track("ad_load_failed",screenName,screenTitle,null,customDimension1 = gamAdUnitId)
                 }
             }
         }
@@ -234,6 +250,7 @@ fun PrebidGamBanner(
                         "resultCode" to resultCode.name,
                     ),
                 )
+                byData.track("prebid_fetch_demand_failed",screenName,screenTitle,prebidBannerConfigId,customDimension1 = gamAdUnitId)
             }
         }
 

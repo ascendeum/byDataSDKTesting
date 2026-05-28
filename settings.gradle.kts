@@ -25,6 +25,17 @@ dependencyResolutionManagement {
                 password = "glpat-wBXCQvKEdH39CQyctBDLYWM6MQpvOjEKdTptaWEydA8.01.171692n6n"
             }
         }
+
+        maven {
+            name = "byDataGitLabPackages"
+            url = uri("https://gitlab.com/api/v4/projects/81760046/packages/maven")
+            credentials(HttpHeaderCredentials::class) {
+                name = "Private-Token"
+                value = providers.gradleProperty("byDataGitLabToken").get()
+            }
+            authentication { create<HttpHeaderAuthentication>("header") }
+            content { includeGroup("com.bydata") }   // keep other deps off this repo
+        }
     }
 }
 
