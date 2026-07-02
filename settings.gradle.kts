@@ -34,7 +34,7 @@ dependencyResolutionManagement {
                 value = providers.gradleProperty("byDataGitLabToken").get()
             }
             authentication { create<HttpHeaderAuthentication>("header") }
-            content { includeGroup("com.bydata") }   // keep other deps off this repo
+            content { includeGroup("com.bydata") }
         }
     }
 }

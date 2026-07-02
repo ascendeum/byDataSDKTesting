@@ -43,15 +43,16 @@ import org.prebid.mobile.Signals
 import org.prebid.mobile.TargetingParams
 
 private const val PREBID_SERVER_URL = "https://fast.nexx360.io/inapp"
-    //"https://prebid-server-test-j.prebid.org/openrtb2/auction"
-private const val PREBID_STORED_REQUEST_ID = "1225"  // "0689a263-318d-448b-a3d4-b02e8a709d9d"
-private const val HOME_PREBID_BANNER_CONFIG_ID = "2d60yfch"
-private const val SYMBOL_PREBID_BANNER_CONFIG_ID = "sckflmua"
+    // "https://prebid-server-test-j.prebid.org/openrtb2/auction"
+    //
+private const val PREBID_STORED_REQUEST_ID = "1225" // "0689a263-318d-448b-a3d4-b02e8a709d9d"   //
+private const val HOME_PREBID_BANNER_CONFIG_ID = "rq4gtkhh" // "prebid-demo-banner-320-50" // "2d60yfch"
+private const val SYMBOL_PREBID_BANNER_CONFIG_ID = "rq4gtkhh" // "prebid-demo-banner-320-50" //"sckflmua"
 //"prebid-demo-banner-320-50"
-private const val HOME_GAM_AD_UNIT_ID = "/22404395434/stocktwitsandroidapp/HomePage_SmallBanner"
-private const val SYMBOL_GAM_AD_UNIT_ID = "/22404395434/stocktwitsandroidapp/SymbolPage_SmallBanner"
-private const val BANNER_WIDTH = 320
-private const val BANNER_HEIGHT = 50
+private const val HOME_GAM_AD_UNIT_ID = "/1022441/TJANM3Flip1"
+private const val SYMBOL_GAM_AD_UNIT_ID = "/1022441/TJANM3Flip3"
+private const val BANNER_WIDTH = 300
+private const val BANNER_HEIGHT = 250
 
 private const val TAG_STR  = "ADSTest"
 
@@ -77,8 +78,8 @@ class MainActivity : ComponentActivity() {
                 Log.d(TAG_STR,"isPrebidInitialized  $isPrebidInitialized");
             }
         }
-        TargetingParams.setStoreUrl("https://play.google.com/store/apps/details?id=org.stocktwits.android.activity")
-        TargetingParams.setBundleName("org.stocktwits.android.activity")
+        TargetingParams.setStoreUrl("https://play.google.com/store/apps/details?id=sun.way2sms.hyd.com")
+        TargetingParams.setBundleName("sun.way2sms.hyd.com")
 
         setContent {
             ByDataSdkTheme {
@@ -133,11 +134,11 @@ fun CenteredAdScreen(
                 screenName = "homescreen",
                 screenTitle = "home",
             )
-            byData.track(
-                eventName = "page_view",
-                screen = "homescreen",
-                screenTitle = "home",
-            )
+//            byData.track(
+//                eventName = "page_view",
+//                screen = "homescreen",
+//                screenTitle = "home",
+//            )
         } else {
             Box(modifier = Modifier.size(BANNER_WIDTH.dp, BANNER_HEIGHT.dp))
         }
@@ -160,11 +161,11 @@ fun SymbolAdScreen(
                 screenName = "symbolscreen",
                 screenTitle = "symbol",
             )
-            byData.track(
-                eventName = "page_view",
-                screen = "symbolscreen",
-                screenTitle = "symbol",
-            )
+//            byData.track(
+//                eventName = "page_view",
+//                screen = "symbolscreen",
+//                screenTitle = "symbol",
+//            )
         } else {
             Box(modifier = Modifier.size(BANNER_WIDTH.dp, BANNER_HEIGHT.dp))
         }
@@ -194,7 +195,15 @@ fun PrebidGamBanner(
                         screenTitle = screenTitle,
                         params = mapOf("cd1" to gamAdUnitId),
                     )
-                    byData.track("display_impression",screenName,screenTitle,null,customDimension1 = gamAdUnitId)
+                    byData.track("display_impression",
+                        screenName,
+                        screenTitle,
+                        null,
+                        customDimensions = mapOf(             // optional: your own extra fields, for THIS event only
+                            "cd1" to gamAdUnitId,
+                            "cd2" to "",
+                        )
+                    )
                     setAdSizes(AdSize(BANNER_WIDTH, BANNER_HEIGHT))
                 }
                 override fun onAdClicked() {
@@ -205,7 +214,16 @@ fun PrebidGamBanner(
                         screenTitle = screenTitle,
                         params = mapOf("cd1" to gamAdUnitId),
                     )
-                    byData.track("ad_click",screenName,screenTitle,null,customDimension1 = gamAdUnitId)
+                    byData.track(
+                        "ad_click",
+                        screenName,
+                        screenTitle,
+                        null,
+                        customDimensions = mapOf(             // optional: your own extra fields, for THIS event only
+                            "cd1" to gamAdUnitId,
+                            "cd2" to "",
+                        )
+                    )
                 }
                 override fun onAdFailedToLoad(error: LoadAdError) {
                     EventsLoggerSdk.trackEvent(
@@ -219,7 +237,18 @@ fun PrebidGamBanner(
                             "errorDomain" to error.domain
                         )
                     )
-                    byData.track("ad_load_failed",screenName,screenTitle,null,customDimension1 = gamAdUnitId)
+                    byData.track(
+                        "ad_load_failed",
+                        screenName,
+                        screenTitle,
+                        null,
+                        customDimensions = mapOf(             // optional: your own extra fields, for THIS event only
+                            "cd1" to gamAdUnitId,
+                            "cd2" to "",
+                            "cd3" to error.message,
+                            "cd4" to error.domain,
+                        )
+                    )
                 }
             }
         }
@@ -250,7 +279,17 @@ fun PrebidGamBanner(
                         "resultCode" to resultCode.name,
                     ),
                 )
-                byData.track("prebid_fetch_demand_failed",screenName,screenTitle,prebidBannerConfigId,customDimension1 = gamAdUnitId)
+                byData.track(
+                    "prebid_fetch_demand_failed",
+                    screenName,
+                    screenTitle,
+                    prebidBannerConfigId,
+                    customDimensions = mapOf(             // optional: your own extra fields, for THIS event only
+                        "cd1" to gamAdUnitId,
+                        "cd2" to prebidBannerConfigId,
+                        "cd3" to resultCode.name,
+                    )
+                )
             }
         }
 

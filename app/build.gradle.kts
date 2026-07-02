@@ -54,7 +54,7 @@ dependencies {
     implementation("org.prebid:prebid-mobile-sdk:3.1.0")
     implementation("bydata.telemetrysdk:eventlogger:1.0.2")
     // Immutable alpha tag — content-addressable, safe to cache. Recommended.
-    implementation("com.bydata:telemetry-android:0.1.0-alpha03")
+    implementation("com.bydata:telemetry-android:0.1.0-alpha07")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
